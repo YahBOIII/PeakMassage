@@ -42,8 +42,8 @@ cp .env.example .env.local
 
 The easiest places to update the brand copy, contact details, and service positioning are:
 
-- `/home/runner/work/PeakMassage/PeakMassage/src/lib/site-content.ts`
-- `/home/runner/work/PeakMassage/PeakMassage/src/lib/scheduling.ts`
+- `src/lib/site-content.ts`
+- `src/lib/scheduling.ts`
 
 ## Deploy on Vercel
 
