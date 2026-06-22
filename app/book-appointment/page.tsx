@@ -13,7 +13,7 @@ export default function BookAppointmentPage() {
         <h1 className="page-head">Book Appointment</h1>
         <article className="card">
           <p>
-            A Vercel-hosted booking system is planned for this page with service
+            A booking system is planned for this page with service
             selection, calendar availability, appointment confirmation, and
             email notifications.
           </p>
