@@ -61,7 +61,7 @@ export async function listAppointments(startDate: string, endDate: string) {
 
   await ensureAppointmentsTable();
 
-  const result = await sql<AppointmentRecord[]>`
+  const result = await sql`
     SELECT
       full_name AS "fullName",
       email,
@@ -76,7 +76,7 @@ export async function listAppointments(startDate: string, endDate: string) {
     ORDER BY appointment_date, appointment_time
   `;
 
-  return result;
+  return result as AppointmentRecord[];
 }
 
 export async function createAppointment(input: CreateAppointmentInput) {
@@ -109,7 +109,7 @@ export async function createAppointment(input: CreateAppointmentInput) {
 
   await ensureAppointmentsTable();
 
-  const result = await sql<{ id: number }[]>`
+  const result = await sql`
     INSERT INTO appointments (
       full_name,
       email,
@@ -132,7 +132,7 @@ export async function createAppointment(input: CreateAppointmentInput) {
     RETURNING id
   `;
 
-  if (result.length === 0) {
+  if ((result as { id: number }[]).length === 0) {
     return {
       ok: false as const,
       reason: "slot_taken" as const,

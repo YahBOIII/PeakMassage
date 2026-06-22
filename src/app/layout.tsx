@@ -1,11 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Peak Recovery Massage | Florida Massage & Scheduling",
@@ -26,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} h-full scroll-smooth antialiased`}>
+    <html lang="en" className="h-full scroll-smooth antialiased">
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

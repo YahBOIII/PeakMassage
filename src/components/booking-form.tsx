@@ -6,7 +6,6 @@ import { siteContent } from "@/lib/site-content";
 import {
   bookingServices,
   getTimeLabel,
-  listOpenSchedule,
   type AppointmentRecord,
   type ScheduleDay,
 } from "@/lib/scheduling";
@@ -61,40 +60,28 @@ export function BookingForm() {
     void loadScheduler();
   }, []);
 
-  const openSchedule = useMemo(
-    () => listOpenSchedule(appointments, schedule.length || undefined),
-    [appointments, schedule.length],
-  );
+  const openSchedule = useMemo(() => {
+    const takenSlots = new Set(
+      appointments.map((appointment) => `${appointment.appointmentDate}-${appointment.appointmentTime}`),
+    );
 
-  useEffect(() => {
-    if (openSchedule.length === 0) {
-      return;
-    }
-
-    const activeDay =
-      openSchedule.find((day) => day.date === form.appointmentDate && day.slots.length > 0) ??
-      openSchedule.find((day) => day.slots.length > 0);
-
-    if (!activeDay) {
-      return;
-    }
-
-    const activeTime =
-      activeDay.date === form.appointmentDate &&
-      activeDay.slots.some((slot) => slot.time === form.appointmentTime)
-        ? form.appointmentTime
-        : activeDay.slots[0]?.time ?? "";
-
-    setForm((current) => ({
-      ...current,
-      appointmentDate: activeDay.date,
-      appointmentTime: activeTime,
-      serviceSlug: current.serviceSlug || bookingServices[0]?.slug || "",
+    return schedule.map((day) => ({
+      ...day,
+      slots: day.slots.filter((slot) => !takenSlots.has(`${day.date}-${slot.time}`)),
     }));
-  }, [form.appointmentDate, form.appointmentTime, openSchedule]);
+  }, [appointments, schedule]);
 
-  const selectedDay =
-    openSchedule.find((day) => day.date === form.appointmentDate) ?? openSchedule[0];
+  const firstOpenDay = openSchedule.find((day) => day.slots.length > 0);
+  const selectedDate = openSchedule.some(
+    (day) => day.date === form.appointmentDate && day.slots.length > 0,
+  )
+    ? form.appointmentDate
+    : firstOpenDay?.date ?? "";
+  const selectedDay = openSchedule.find((day) => day.date === selectedDate) ?? firstOpenDay;
+  const selectedTime =
+    selectedDay?.slots.some((slot) => slot.time === form.appointmentTime)
+      ? form.appointmentTime
+      : selectedDay?.slots[0]?.time ?? "";
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -107,7 +94,11 @@ export function BookingForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          appointmentDate: selectedDate,
+          appointmentTime: selectedTime,
+        }),
       });
 
       const data = (await response.json()) as { message?: string; error?: string; storageMode?: "database" | "preview" };
@@ -128,8 +119,8 @@ export function BookingForm() {
           email: form.email.trim().toLowerCase(),
           phone: form.phone.trim(),
           serviceSlug: form.serviceSlug,
-          appointmentDate: form.appointmentDate,
-          appointmentTime: form.appointmentTime,
+          appointmentDate: selectedDate,
+          appointmentTime: selectedTime,
           notes: form.notes.trim() || null,
           createdAt: new Date().toISOString(),
         },
@@ -300,7 +291,7 @@ export function BookingForm() {
               Appointment day
               <select
                 required
-                value={form.appointmentDate}
+                value={selectedDate}
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
@@ -327,7 +318,7 @@ export function BookingForm() {
               Appointment time
               <select
                 required
-                value={form.appointmentTime}
+                value={selectedTime}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, appointmentTime: event.target.value }))
                 }
@@ -361,11 +352,9 @@ export function BookingForm() {
           <p>
             Selected slot:{" "}
             <span className="font-semibold text-slate-950">
-              {form.appointmentDate
-                ? `${selectedDay?.label ?? form.appointmentDate} · ${getTimeLabel(
-                    form.appointmentTime,
-                  )}`
-                : "Choose a date"}
+            {selectedDate
+              ? `${selectedDay?.label ?? selectedDate} · ${getTimeLabel(selectedTime)}`
+              : "Choose a date"}
             </span>
           </p>
           <p className="font-medium text-cyan-800">Florida schedule · Eastern Time</p>
