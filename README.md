@@ -13,6 +13,14 @@ npm install
 npm run dev
 ```
 
+Open: http://localhost:3000
+
+## Rough draft link (no Vercel required)
+
+GitHub Pages deployment target:
+
+https://yahboiii.github.io/PeakMassage/
+
 ## Validation
 
 ```bash
