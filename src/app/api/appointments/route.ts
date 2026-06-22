@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 
+import {
+  MAX_BOOKING_NOTES_LENGTH,
+  MIN_BOOKING_NAME_LENGTH,
+  MIN_BOOKING_PHONE_LENGTH,
+} from "@/lib/booking-config";
 import { createAppointment, getStorageMode, listAppointments } from "@/lib/booking-store";
 import {
   findService,
@@ -56,7 +61,7 @@ export async function POST(request: Request) {
   const appointmentTime = payload.appointmentTime?.trim() ?? "";
   const notes = payload.notes?.trim() ?? "";
 
-  if (fullName.length < 2) {
+  if (fullName.length < MIN_BOOKING_NAME_LENGTH) {
     return badRequest("Please enter your full name.");
   }
 
@@ -64,7 +69,7 @@ export async function POST(request: Request) {
     return badRequest("Please enter a valid email address.");
   }
 
-  if (phone.length < 7) {
+  if (phone.length < MIN_BOOKING_PHONE_LENGTH) {
     return badRequest("Please enter a valid phone number.");
   }
 
@@ -80,8 +85,8 @@ export async function POST(request: Request) {
     return badRequest("That appointment time is not available.");
   }
 
-  if (notes.length > 500) {
-    return badRequest("Please keep session notes under 500 characters.");
+  if (notes.length > MAX_BOOKING_NOTES_LENGTH) {
+    return badRequest(`Please keep session notes under ${MAX_BOOKING_NOTES_LENGTH} characters.`);
   }
 
   const result = await createAppointment({

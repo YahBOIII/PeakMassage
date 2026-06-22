@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { MAX_BOOKING_NOTES_LENGTH } from "@/lib/booking-config";
 import { siteContent } from "@/lib/site-content";
 import {
   bookingServices,
@@ -343,7 +344,7 @@ export function BookingForm() {
               }
               className="min-h-32 rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-cyan-500"
               placeholder="Share any sore areas, training notes, or recovery goals."
-              maxLength={500}
+              maxLength={MAX_BOOKING_NOTES_LENGTH}
             />
           </label>
         </div>

@@ -1,3 +1,5 @@
+import { BOOKING_WINDOW_DAYS, getOperatingHours } from "@/lib/booking-config";
+
 export type BookingService = {
   slug: string;
   name: string;
@@ -26,18 +28,6 @@ export type ScheduleDay = {
   date: string;
   label: string;
   slots: ScheduleSlot[];
-};
-
-const bookingWindowDays = 21;
-
-const operatingHours: Record<number, { openHour: number; closeHour: number } | null> = {
-  0: null,
-  1: { openHour: 9, closeHour: 18 },
-  2: { openHour: 9, closeHour: 18 },
-  3: { openHour: 9, closeHour: 18 },
-  4: { openHour: 9, closeHour: 18 },
-  5: { openHour: 9, closeHour: 18 },
-  6: { openHour: 9, closeHour: 15 },
 };
 
 export const bookingServices: BookingService[] = [
@@ -71,12 +61,12 @@ export const bookingServices: BookingService[] = [
   },
 ];
 
-function pad(value: number) {
+function padToTwoDigits(value: number) {
   return value.toString().padStart(2, "0");
 }
 
 export function getBookingWindowDays() {
-  return bookingWindowDays;
+  return BOOKING_WINDOW_DAYS;
 }
 
 export function getDateLabel(date: string) {
@@ -98,11 +88,11 @@ export function getTimeLabel(time: string) {
 }
 
 function toDateKey(date: Date) {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return `${date.getFullYear()}-${padToTwoDigits(date.getMonth() + 1)}-${padToTwoDigits(date.getDate())}`;
 }
 
 function createSlot(hour: number): ScheduleSlot {
-  const time = `${pad(hour)}:00`;
+  const time = `${padToTwoDigits(hour)}:00`;
 
   return {
     time,
@@ -110,7 +100,7 @@ function createSlot(hour: number): ScheduleSlot {
   };
 }
 
-export function listUpcomingSchedule(days = bookingWindowDays): ScheduleDay[] {
+export function listUpcomingSchedule(days = BOOKING_WINDOW_DAYS): ScheduleDay[] {
   const schedule: ScheduleDay[] = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -118,7 +108,7 @@ export function listUpcomingSchedule(days = bookingWindowDays): ScheduleDay[] {
   for (let offset = 0; offset < days; offset += 1) {
     const date = new Date(today);
     date.setDate(today.getDate() + offset);
-    const hours = operatingHours[date.getDay()];
+    const hours = getOperatingHours(date.getDay());
 
     if (!hours) {
       continue;
@@ -141,7 +131,7 @@ export function listUpcomingSchedule(days = bookingWindowDays): ScheduleDay[] {
   return schedule;
 }
 
-export function listOpenSchedule(appointments: AppointmentRecord[], days = bookingWindowDays) {
+export function listOpenSchedule(appointments: AppointmentRecord[], days = BOOKING_WINDOW_DAYS) {
   const bookedSlots = new Set(
     appointments.map((appointment) => `${appointment.appointmentDate}-${appointment.appointmentTime}`),
   );
