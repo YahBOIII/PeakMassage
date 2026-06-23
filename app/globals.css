@@ -63,20 +63,15 @@ main {
 
 .brand {
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  letter-spacing: 0.03em;
+  flex-shrink: 0;
+  line-height: 0;
 }
 
-.brand-name {
-  color: var(--blue-soft);
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-.brand-tagline {
-  color: var(--silver);
-  font-size: 0.78rem;
+.brand-logo {
+  display: block;
+  height: auto;
+  max-width: min(280px, 58vw);
+  width: 100%;
 }
 
 .nav-list {
