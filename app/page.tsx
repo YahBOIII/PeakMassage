@@ -1,64 +1,52 @@
 import Link from "next/link";
-
-const services = [
-  {
-    name: "Peak Recovery Massage",
-    details: "60 Minutes — $95 | 90 Minutes — $135",
-    description:
-      "Focused recovery treatment designed to reduce muscle tension, improve circulation, and accelerate recovery.",
-  },
-  {
-    name: "Sports Massage",
-    details: "60 Minutes — $100 | 90 Minutes — $145",
-    description:
-      "Performance-oriented treatment for athletes seeking improved mobility, flexibility, and recovery.",
-  },
-  {
-    name: "Deep Tissue Massage",
-    details: "60 Minutes — $100 | 90 Minutes — $145",
-    description:
-      "Targeted pressure to address chronic tension, muscular dysfunction, and restricted movement.",
-  },
-  {
-    name: "Mobility & Stretch Therapy",
-    details: "45 Minutes — $75 | 60 Minutes — $95",
-    description:
-      "Assisted stretching and mobility work designed to improve range of motion and movement quality.",
-  },
-];
+import {
+  aboutSummary,
+  benefits,
+  brandName,
+  commonIssues,
+  sessionIncludes,
+  sessionOptions,
+  tagline,
+  targetAudience,
+} from "./site-content";
 
 const faqs = [
   {
-    question: "Who is Peak Recovery Massage for?",
+    question: `Who is ${brandName} for?`,
     answer:
-      "Athletes, active adults, professionals, older adults, and anyone seeking pain reduction or mobility support.",
+      "Peak Recovery is built for athletes, active adults, martial artists, court sport athletes, lifters, runners, rock climbers, and anyone dealing with pain, tightness, or mobility restrictions.",
   },
   {
-    question: "Do you accept walk-ins?",
-    answer: "No. Services are provided by appointment only.",
+    question: "What may be included in a session?",
+    answer:
+      "Sessions are tailored to the individual and may include massage therapy, deep tissue work, assisted stretching, scraping (IASTM), cupping, and mobility-focused bodywork.",
   },
   {
-    question: "What should I expect from my first session?",
+    question: "What can this work help with?",
     answer:
-      "A consultation, tailored treatment plan, and focused therapy aligned to your recovery and performance goals.",
+      "Recovery-focused sessions may help address headaches and migraines, sciatica-related discomfort, neck and shoulder pain, low back pain, hip tightness, muscle tension, mobility restrictions, and stress-related tightness.",
   },
 ];
 
 const localBusinessSchema = {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  name: "Peak Recovery Massage",
-  description:
-    "Premium massage therapy and recovery-focused wellness services in Florida.",
-  telephone: "[TBD]",
-  email: "[TBD]",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "[TBD]",
-    addressLocality: "[TBD]",
-    addressRegion: "FL",
-    postalCode: "[TBD]",
-    addressCountry: "US",
+  "@type": "HealthAndBeautyBusiness",
+  name: brandName,
+  description: aboutSummary,
+  slogan: tagline,
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Recovery Massage Sessions",
+    itemListElement: sessionOptions.map((option) => ({
+      "@type": "Offer",
+      itemOffered: {
+        "@type": "Service",
+        name: `Recovery Massage (${option.duration})`,
+        description: option.description,
+      },
+      price: option.price.replace("$", ""),
+      priceCurrency: "USD",
+    })),
   },
 };
 
@@ -80,111 +68,124 @@ export default function Home() {
     <>
       <section className="hero">
         <div className="container">
-          <h1>Move Better. Recover Faster. Perform at Your Peak.</h1>
-          <p>
-            Professional recovery-focused massage therapy designed for athletes,
-            active adults, and anyone looking to reduce pain, improve mobility,
-            and optimize performance.
-          </p>
-          <div className="actions">
-            <Link className="button primary" href="/book-appointment">
-              Book Appointment
-            </Link>
-            <Link className="button" href="/services">
-              View Services
-            </Link>
-          </div>
+        <p className="eyebrow">{tagline}</p>
+        <h1>Reduce pain, improve mobility, and recover with purpose.</h1>
+        <p>
+          {aboutSummary}
+        </p>
+        <div className="actions">
+          <Link className="button primary" href="/book-appointment">
+            Book Now
+          </Link>
+          <Link className="button" href="/pricing">
+            View Pricing
+          </Link>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section className="section">
-        <div className="container">
-          <h2>Services Overview</h2>
-          <div className="grid">
-            {services.map((service) => (
-              <article className="card" key={service.name}>
-                <h3>{service.name}</h3>
-                <p>{service.details}</p>
-                <p>{service.description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container grid">
+    <section className="section">
+      <div className="container">
+        <h2>Recovery Massage Sessions</h2>
+        <p className="section-copy">
+          Choose the session length that fits your needs. Every appointment is
+          tailored to your goals, movement demands, and recovery priorities.
+        </p>
+        <div className="grid">
+          {sessionOptions.map((service) => (
+            <article className="card" key={service.duration}>
+              <h3>Recovery Massage</h3>
+              <p className="card-subtitle">{service.duration}</p>
+              <p className="price">{service.price}</p>
+              <p>{service.description}</p>
+            </article>
+          ))}
           <article className="card">
-            <h2>About Mason Centers</h2>
-            <p>
-              Mason Centers is dedicated to helping clients achieve optimal
-              physical performance, recovery, and wellness through personalized
-              massage therapy and mobility-focused treatment plans.
-            </p>
-            <p>
-              Peak Recovery Massage was founded with a mission to help people
-              move better, recover faster, and live pain-free through
-              evidence-based therapeutic care.
-            </p>
-          </article>
-          <article className="card">
-            <h2>Benefits</h2>
-            <ul>
-              <li>Reduced pain and muscular tension</li>
-              <li>Improved flexibility and mobility</li>
-              <li>Faster workout and injury recovery</li>
-              <li>Better movement quality and longevity</li>
+            <h3>Sessions May Include</h3>
+            <ul className="list">
+              {sessionIncludes.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
             </ul>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section className="section">
-        <div className="container">
-          <h2>Testimonials</h2>
-          <div className="grid">
-            <article className="card">Review 1: [TBD]</article>
-            <article className="card">Review 2: [TBD]</article>
-            <article className="card">Review 3: [TBD]</article>
-          </div>
+    <section className="section">
+      <div className="container">
+        <h2>Built for Real Recovery</h2>
+        <div className="grid">
+          <article className="card">
+            <h3>About {brandName}</h3>
+            <p>{aboutSummary}</p>
+          </article>
+          <article className="card">
+            <h3>Who We Help</h3>
+            <ul className="tag-list">
+              {targetAudience.map((audience) => (
+                <li key={audience}>{audience}</li>
+              ))}
+            </ul>
+          </article>
+          <article className="card">
+            <h3>Common Issues We May Help With</h3>
+            <ul className="list">
+              {commonIssues.map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+          </article>
+          <article className="card">
+            <h3>Benefits</h3>
+            <ul className="list">
+              {benefits.map((benefit) => (
+                <li key={benefit}>{benefit}</li>
+              ))}
+            </ul>
+          </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section className="section">
-        <div className="container card">
-          <h2>Ready to Recover Smarter?</h2>
-          <p>
-            Book your appointment and start a targeted recovery plan built for
-            your goals.
-          </p>
-          <div className="actions">
-            <Link className="button primary" href="/book-appointment">
-              Book Appointment
-            </Link>
-          </div>
+    <section className="section">
+      <div className="container card">
+        <h2>Ready to recover smarter?</h2>
+        <p>
+          Book a recovery-focused session designed around your pain points,
+          mobility restrictions, training demands, and day-to-day recovery.
+        </p>
+        <div className="actions">
+          <Link className="button primary" href="/book-appointment">
+            Book Now
+          </Link>
+          <Link className="button" href="/contact">
+            Contact Peak Recovery
+          </Link>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section className="section">
-        <div className="container">
-          <h2>Frequently Asked Questions</h2>
-          {faqs.map((faq) => (
-            <article className="faq-item" key={faq.question}>
-              <h3>{faq.question}</h3>
-              <p>{faq.answer}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+    <section className="section">
+      <div className="container">
+        <h2>Frequently Asked Questions</h2>
+        {faqs.map((faq) => (
+          <article className="faq-item card" key={faq.question}>
+            <h3>{faq.question}</h3>
+            <p>{faq.answer}</p>
+          </article>
+        ))}
+      </div>
+    </section>
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+    />
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+    />
     </>
   );
 }

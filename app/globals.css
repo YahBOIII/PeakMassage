@@ -1,10 +1,12 @@
 :root {
   --black: #000000;
   --white: #ffffff;
+  --blue: #2563eb;
+  --blue-soft: #93c5fd;
   --silver: #c0c0c0;
-  --gold: #c7a46c;
-  --surface: #121212;
-  --surface-2: #1b1b1b;
+  --surface: #10141b;
+  --surface-2: #0a0d12;
+  --border: #263244;
 }
 
 * {
@@ -43,7 +45,7 @@ main {
 }
 
 .site-header {
-  border-bottom: 1px solid #2d2d2d;
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -60,10 +62,21 @@ main {
 }
 
 .brand {
-  color: var(--gold);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  letter-spacing: 0.03em;
+}
+
+.brand-name {
+  color: var(--blue-soft);
   font-size: 1.1rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
+}
+
+.brand-tagline {
+  color: var(--silver);
+  font-size: 0.78rem;
 }
 
 .nav-list {
@@ -78,13 +91,27 @@ main {
   font-size: 0.95rem;
 }
 
+.nav-list a:hover,
+.nav-list a:focus-visible {
+  color: var(--white);
+}
+
 .section {
   padding: 4rem 0;
 }
 
 .hero {
-  background: radial-gradient(circle at top right, #2a2a2a 0%, var(--black) 55%);
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.35) 0%, rgba(16, 20, 27, 0.95) 35%, var(--black) 65%);
   padding: 6rem 0;
+}
+
+.eyebrow {
+  color: var(--blue-soft);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
 }
 
 .hero h1 {
@@ -115,9 +142,9 @@ main {
 }
 
 .button.primary {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: var(--black);
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white);
 }
 
 .grid {
@@ -128,7 +155,7 @@ main {
 
 .card {
   background: var(--surface);
-  border: 1px solid #2d2d2d;
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.2rem;
 }
@@ -146,7 +173,7 @@ main {
 
 .site-footer {
   background: var(--surface-2);
-  border-top: 1px solid #2d2d2d;
+  border-top: 1px solid var(--border);
   margin-top: 3rem;
   padding: 2.5rem 0 1.5rem;
 }
@@ -168,8 +195,58 @@ main {
   margin-bottom: 1rem;
 }
 
+.section-copy {
+  color: var(--silver);
+  margin-bottom: 1rem;
+  max-width: 760px;
+}
+
+.list {
+  display: grid;
+  gap: 0.55rem;
+  padding-left: 1.1rem;
+}
+
+.list li::marker {
+  color: var(--blue-soft);
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  list-style: none;
+}
+
+.tag-list li {
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--silver);
+  padding: 0.5rem 0.85rem;
+}
+
+.price {
+  color: var(--white);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
+
+.card-subtitle {
+  color: var(--blue-soft);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
 .faq-item {
   margin-bottom: 1rem;
+}
+
+.footer-list {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
 }
 
 @media (max-width: 840px) {

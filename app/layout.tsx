@@ -1,30 +1,32 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import { brandName, sessionOptions, tagline } from "./site-content";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Peak Recovery Massage | Recovery-Focused Massage Therapy",
-    template: "%s | Peak Recovery Massage",
+    default: `${brandName} | ${tagline}`,
+    template: `%s | ${brandName}`,
   },
   description:
-    "Move better, recover faster, and perform at your peak with recovery-focused massage therapy in Florida.",
+    "Reduce pain, improve mobility, and recover from the demands of work, training, and everyday life with recovery-focused bodywork.",
   keywords: [
-    "Massage Therapy in Florida",
-    "Sports Massage in Florida",
-    "Deep Tissue Massage in Florida",
-    "Recovery Massage in Florida",
-    "Mobility Therapy in Florida",
+    "Recovery Massage",
+    "Massage Therapy",
+    "Deep Tissue Work",
+    "Assisted Stretching",
+    "Cupping",
+    "Mobility-Focused Bodywork",
   ],
   openGraph: {
-    title: "Peak Recovery Massage",
+    title: brandName,
     description:
-      "Professional recovery-focused massage therapy for athletes, active adults, and wellness clients.",
+      "Recovery-focused bodywork for athletes, active adults, and anyone dealing with pain, tightness, or mobility restrictions.",
     url: siteUrl,
-    siteName: "Peak Recovery Massage",
+    siteName: brandName,
     type: "website",
   },
 };
@@ -33,9 +35,9 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/services", label: "Services" },
-  { href: "/book-appointment", label: "Book Appointment" },
-  { href: "/testimonials", label: "Testimonials" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/contact", label: "Contact" },
+  { href: "/book-appointment", label: "Book Now" },
 ];
 
 export default function RootLayout({
@@ -49,7 +51,8 @@ export default function RootLayout({
         <header className="site-header">
           <div className="container nav-wrap">
             <Link className="brand" href="/">
-              Peak Recovery Massage
+              <span className="brand-name">{brandName}</span>
+              <span className="brand-tagline">{tagline}</span>
             </Link>
             <nav>
               <ul className="nav-list">
@@ -66,22 +69,33 @@ export default function RootLayout({
         <footer className="site-footer">
           <div className="container footer-grid">
             <section>
-              <h3>Peak Recovery Massage</h3>
-              <p>By appointment only.</p>
+              <h3>{brandName}</h3>
+              <p>{tagline}</p>
+              <p>Individualized sessions for pain relief, mobility, and recovery.</p>
             </section>
             <section>
-              <h3>Contact</h3>
-              <p>Phone: [TBD]</p>
-              <p>Email: [TBD]</p>
-              <p>Address: [TBD]</p>
+              <h3>Session Options</h3>
+              <ul className="footer-list">
+                {sessionOptions.map((option) => (
+                  <li key={option.duration}>
+                    Recovery Massage ({option.duration}) — {option.price}
+                  </li>
+                ))}
+              </ul>
             </section>
             <section>
-              <h3>Follow</h3>
-              <p>Social Links: [TBD]</p>
+              <h3>Explore</h3>
+              <ul className="footer-list">
+                {navLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href}>{link.label}</Link>
+                  </li>
+                ))}
+              </ul>
             </section>
           </div>
           <p className="copyright">
-            © {new Date().getFullYear()} Peak Recovery Massage. All Rights Reserved.
+            © {new Date().getFullYear()} {brandName}. All Rights Reserved.
           </p>
         </footer>
       </body>
