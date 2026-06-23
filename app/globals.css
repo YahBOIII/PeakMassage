@@ -67,13 +67,6 @@ main {
   line-height: 0;
 }
 
-.brand-logo {
-  display: block;
-  height: auto;
-  max-width: min(280px, 58vw);
-  width: 100%;
-}
-
 .nav-list {
   display: flex;
   flex-wrap: wrap;

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import "./globals.css";
 import { brandName, sessionOptions, tagline } from "./site-content";
@@ -52,14 +51,7 @@ export default function RootLayout({
         <header className="site-header">
           <div className="container nav-wrap">
             <Link className="brand" href="/">
-              <Image
-                src="/assets/PeakBrand.png"
-                alt={`${brandName} Massage`}
-                width={280}
-                height={187}
-                className="brand-logo"
-                priority
-              />
+              {brandName}
             </Link>
             <nav>
               <ul className="nav-list">
