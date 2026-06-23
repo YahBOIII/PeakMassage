@@ -55,8 +55,8 @@ export default function RootLayout({
               <Image
                 src="/assets/PeakBrand.png"
                 alt={`${brandName} Massage`}
-                width={1536}
-                height={1024}
+                width={280}
+                height={187}
                 className="brand-logo"
                 priority
               />
