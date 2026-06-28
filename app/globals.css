@@ -67,6 +67,38 @@ main {
   line-height: 0;
 }
 
+.brand-logo {
+  align-items: center;
+  display: flex;
+  gap: 0.55rem;
+}
+
+.brand-icon {
+  height: 34px;
+  width: 34px;
+  flex-shrink: 0;
+}
+
+.brand-wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.brand-peak {
+  color: var(--white);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.brand-recovery {
+  color: var(--blue-soft);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+}
+
 .nav-list {
   display: flex;
   flex-wrap: wrap;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import BrandLogo from "./components/BrandLogo";
 import { brandName, sessionOptions, tagline } from "./site-content";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -50,8 +51,8 @@ export default function RootLayout({
       <body>
         <header className="site-header">
           <div className="container nav-wrap">
-            <Link className="brand" href="/">
-              {brandName}
+            <Link className="brand" href="/" aria-label={brandName}>
+              <BrandLogo />
             </Link>
             <nav>
               <ul className="nav-list">
