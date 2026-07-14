@@ -9,6 +9,8 @@ export const metadata: Metadata = {
     "Book a Peak Recovery session and choose the recovery massage length that best fits your needs.",
 };
 
+const NEXT_DYNAMIC_SERVER_USAGE_DIGEST = "DYNAMIC_SERVER_USAGE";
+
 export default async function BookAppointmentPage() {
   let isAuthenticated = false;
 
@@ -20,7 +22,7 @@ export default async function BookAppointmentPage() {
       typeof error === "object" &&
       error !== null &&
       "digest" in error &&
-      (error as { digest?: string }).digest === "DYNAMIC_SERVER_USAGE";
+      (error as { digest?: string }).digest === NEXT_DYNAMIC_SERVER_USAGE_DIGEST;
 
     if (!isExpectedDynamicServerError) {
       console.error("Failed to load session on book appointment page.", error);
