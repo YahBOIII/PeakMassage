@@ -24,6 +24,25 @@ function formatSlotLabel(slot: string) {
   });
 }
 
+function formatDateLabel(dateString: string) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+const inputStyle: React.CSSProperties = {
+  background: "#0a0d12",
+  border: "1px solid #263244",
+  borderRadius: "8px",
+  color: "#ffffff",
+  padding: "0.5rem",
+  width: "100%",
+};
+
 export default function BookingWidget({ isAuthenticated }: Props) {
   const [services, setServices] = useState<Service[]>([]);
   const [serviceId, setServiceId] = useState("");
@@ -33,8 +52,8 @@ export default function BookingWidget({ isAuthenticated }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
+  const [booked, setBooked] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [messageType, setMessageType] = useState<"success" | "error">("error");
 
   // Guest fields
   const [guestName, setGuestName] = useState("");
@@ -67,7 +86,6 @@ export default function BookingWidget({ isAuthenticated }: Props) {
         }
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Unable to load services.");
-        setMessageType("error");
       } finally {
         setIsLoading(false);
       }
@@ -102,7 +120,6 @@ export default function BookingWidget({ isAuthenticated }: Props) {
       } catch (error) {
         setSlots([]);
         setMessage(error instanceof Error ? error.message : "Unable to load availability.");
-        setMessageType("error");
       } finally {
         setIsCheckingAvailability(false);
       }
@@ -114,7 +131,6 @@ export default function BookingWidget({ isAuthenticated }: Props) {
   async function bookAppointment() {
     if (!selectedSlot || !serviceId) {
       setMessage("Please select a time slot.");
-      setMessageType("error");
       return;
     }
 
@@ -124,13 +140,8 @@ export default function BookingWidget({ isAuthenticated }: Props) {
     try {
       const response = await fetch("/api/appointments", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          serviceId,
-          startAt: selectedSlot,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ serviceId, startAt: selectedSlot }),
       });
 
       const data = await response.json();
@@ -139,22 +150,9 @@ export default function BookingWidget({ isAuthenticated }: Props) {
         throw new Error(data.error ?? "Unable to create appointment.");
       }
 
-      setMessage("Appointment booked successfully.");
-      setMessageType("success");
-      setSelectedSlot("");
-
-      const availabilityResponse = await fetch(
-        `/api/availability?date=${encodeURIComponent(date)}&serviceId=${encodeURIComponent(serviceId)}`,
-        { cache: "no-store" },
-      );
-      const availabilityData = await availabilityResponse.json();
-
-      if (availabilityResponse.ok) {
-        setSlots(availabilityData.slots as string[]);
-      }
+      setBooked(true);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to create appointment.");
-      setMessageType("error");
     } finally {
       setIsBooking(false);
     }
@@ -163,25 +161,21 @@ export default function BookingWidget({ isAuthenticated }: Props) {
   async function bookGuestAppointment() {
     if (!selectedSlot || !serviceId) {
       setMessage("Please select a time slot.");
-      setMessageType("error");
       return;
     }
 
     if (!guestName.trim()) {
-      setMessage("Please enter your first name.");
-      setMessageType("error");
+      setMessage("Please enter your name.");
       return;
     }
 
     if (!guestEmail.trim()) {
       setMessage("Please enter your email address.");
-      setMessageType("error");
       return;
     }
 
     if (!guestPhone.trim()) {
       setMessage("Please enter your phone number.");
-      setMessageType("error");
       return;
     }
 
@@ -191,9 +185,7 @@ export default function BookingWidget({ isAuthenticated }: Props) {
     try {
       const response = await fetch("/api/appointments/guest", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           guestName: guestName.trim(),
           guestEmail: guestEmail.trim(),
@@ -209,196 +201,239 @@ export default function BookingWidget({ isAuthenticated }: Props) {
         throw new Error(data.error ?? "Unable to create appointment.");
       }
 
-      setMessage("Appointment booked! We will be in touch to confirm.");
-      setMessageType("success");
-      setSelectedSlot("");
-      setGuestName("");
-      setGuestEmail("");
-      setGuestPhone("");
-
-      const availabilityResponse = await fetch(
-        `/api/availability?date=${encodeURIComponent(date)}&serviceId=${encodeURIComponent(serviceId)}`,
-        { cache: "no-store" },
-      );
-      const availabilityData = await availabilityResponse.json();
-
-      if (availabilityResponse.ok) {
-        setSlots(availabilityData.slots as string[]);
-      }
+      setBooked(true);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to create appointment.");
-      setMessageType("error");
     } finally {
       setIsBooking(false);
     }
   }
 
-  if (isLoading) {
-    return <p className="section-copy">Loading booking options...</p>;
+  function startOver() {
+    setBooked(false);
+    setSelectedSlot("");
+    setGuestName("");
+    setGuestEmail("");
+    setGuestPhone("");
+    setMessage(null);
+    setDate(toDateInputValue(new Date()));
   }
 
+  if (isLoading) {
+    return <p className="section-copy">Loading booking options…</p>;
+  }
+
+  // ── Confirmation screen ──────────────────────────────────────────────────────
+  if (booked) {
+    return (
+      <article className="card" style={{ maxWidth: 480 }}>
+        <p style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>✅</p>
+        <h2 style={{ marginBottom: "0.75rem" }}>You&apos;re booked!</h2>
+        {selectedService && selectedSlot ? (
+          <p className="section-copy" style={{ marginBottom: "0.5rem" }}>
+            <strong>{selectedService.durationMinutes}-minute session</strong> on{" "}
+            <strong>{formatDateLabel(date)}</strong> at{" "}
+            <strong>{formatSlotLabel(selectedSlot)}</strong>.
+          </p>
+        ) : null}
+        {isAuthenticated ? (
+          <p className="section-copy">Your appointment has been confirmed.</p>
+        ) : (
+          <p className="section-copy">We&apos;ll be in touch to confirm your appointment.</p>
+        )}
+        <div className="actions" style={{ marginTop: "1.25rem" }}>
+          <button className="button" type="button" onClick={startOver}>
+            Book Another
+          </button>
+          {isAuthenticated ? (
+            <Link className="button primary" href="/appointments">
+              View My Appointments
+            </Link>
+          ) : null}
+        </div>
+      </article>
+    );
+  }
+
+  // ── Step indicator ───────────────────────────────────────────────────────────
+  const step = !date || isCheckingAvailability ? 1 : selectedSlot ? 3 : slots.length > 0 ? 2 : 1;
+
   return (
-    <>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: 560 }}>
       {message ? (
-        <p className="section-copy" style={{ color: messageType === "success" ? "#4caf50" : undefined }}>
+        <p className="section-copy" style={{ color: "#f87171" }}>
           {message}
         </p>
       ) : null}
-      {services.length > 0 ? (
-        <article className="card" style={{ marginBottom: "1rem" }}>
-          <h2>Select Service</h2>
-          <div className="actions" style={{ marginBottom: "1rem" }}>
-            {services.map((service) => (
-              <button
-                key={service.id}
-                className={`button${service.id === serviceId ? " primary" : ""}`}
-                type="button"
-                onClick={() => setServiceId(service.id)}
-              >
-                {service.durationMinutes} Minutes
-              </button>
-            ))}
-          </div>
-          <label htmlFor="booking-date">Date</label>
-          <input
-            id="booking-date"
-            type="date"
-            value={date}
-            min={toDateInputValue(new Date())}
-            onChange={(event) => setDate(event.target.value)}
-            style={{
-              background: "#0a0d12",
-              border: "1px solid #263244",
-              borderRadius: "8px",
-              color: "#ffffff",
-              marginTop: "0.5rem",
-              padding: "0.5rem",
-            }}
-          />
+
+      {/* ── Step 1: Service + Date ─────────────────────────────────────────── */}
+      <article className="card">
+        <p style={{ color: "#93c5fd", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.08em", marginBottom: "0.5rem", textTransform: "uppercase" }}>
+          Step 1 — Choose a date
+        </p>
+        {services.length > 0 ? (
+          <>
+            <p style={{ color: "#c0c0c0", fontSize: "0.9rem", marginBottom: "0.5rem" }}>Session length</p>
+            <div className="actions" style={{ marginBottom: "1rem" }}>
+              {services.map((service) => (
+                <button
+                  key={service.id}
+                  className={`button${service.id === serviceId ? " primary" : ""}`}
+                  type="button"
+                  onClick={() => {
+                    setServiceId(service.id);
+                    setSelectedSlot("");
+                  }}
+                >
+                  {service.durationMinutes} min
+                </button>
+              ))}
+            </div>
+          </>
+        ) : null}
+        <label htmlFor="booking-date" style={{ display: "block", marginBottom: "0.25rem" }}>
+          Date
+        </label>
+        <input
+          id="booking-date"
+          type="date"
+          value={date}
+          min={toDateInputValue(new Date())}
+          onChange={(event) => {
+            setDate(event.target.value);
+            setSelectedSlot("");
+          }}
+          style={{ ...inputStyle, marginTop: "0.25rem" }}
+        />
+      </article>
+
+      {/* ── Step 2: Time slot ─────────────────────────────────────────────── */}
+      {date ? (
+        <article className="card">
+          <p style={{ color: "#93c5fd", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.08em", marginBottom: "0.5rem", textTransform: "uppercase" }}>
+            Step 2 — Pick a time
+          </p>
+          {selectedService ? (
+            <p className="section-copy" style={{ marginBottom: "0.75rem" }}>
+              {selectedService.durationMinutes}-minute slots on {formatDateLabel(date)}
+            </p>
+          ) : null}
+          {isCheckingAvailability ? (
+            <p className="section-copy">Checking availability…</p>
+          ) : slots.length === 0 ? (
+            <p className="section-copy">No available slots for this date. Try another day.</p>
+          ) : (
+            <div className="actions">
+              {slots.map((slot) => (
+                <button
+                  key={slot}
+                  className={`button${selectedSlot === slot ? " primary" : ""}`}
+                  type="button"
+                  onClick={() => setSelectedSlot(slot)}
+                >
+                  {formatSlotLabel(slot)}
+                </button>
+              ))}
+            </div>
+          )}
         </article>
       ) : null}
 
-      <article className="card">
-        <h2>Available Time Blocks</h2>
-        {selectedService ? (
-          <p className="section-copy">{selectedService.durationMinutes}-minute appointments shown in 15-minute starts.</p>
-        ) : null}
-        {isCheckingAvailability ? <p className="section-copy">Checking availability...</p> : null}
-        {!isCheckingAvailability && slots.length === 0 ? (
-          <p className="section-copy">No available slots for this date.</p>
-        ) : null}
-        <div className="actions">
-          {slots.map((slot) => (
-            <button
-              key={slot}
-              className={`button${selectedSlot === slot ? " primary" : ""}`}
-              type="button"
-              onClick={() => setSelectedSlot(slot)}
-            >
-              {formatSlotLabel(slot)}
-            </button>
-          ))}
-        </div>
+      {/* ── Step 3: Details + Confirm ─────────────────────────────────────── */}
+      {selectedSlot ? (
+        <article className="card">
+          <p style={{ color: "#93c5fd", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.08em", marginBottom: "0.5rem", textTransform: "uppercase" }}>
+            Step 3 — Confirm booking
+          </p>
+          <p className="section-copy" style={{ marginBottom: "1rem" }}>
+            {selectedService?.durationMinutes} min · {formatDateLabel(date)} · {formatSlotLabel(selectedSlot)}
+          </p>
 
-        {isAuthenticated ? (
-          <div className="actions" style={{ marginTop: "1rem" }}>
-            <button
-              className="button primary"
-              type="button"
-              onClick={bookAppointment}
-              disabled={!selectedSlot || isBooking}
-            >
-              {isBooking ? "Booking..." : "Book Appointment"}
-            </button>
-            <Link className="button" href="/appointments">
-              View My Appointments
-            </Link>
-          </div>
-        ) : (
-          <div style={{ marginTop: "1.5rem" }}>
-            <h3 style={{ marginBottom: "1rem" }}>Your Details</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", maxWidth: "400px" }}>
-              <div>
-                <label htmlFor="guest-name" style={{ display: "block", marginBottom: "0.25rem" }}>
-                  First Name
-                </label>
-                <input
-                  id="guest-name"
-                  type="text"
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="Jane"
-                  style={{
-                    background: "#0a0d12",
-                    border: "1px solid #263244",
-                    borderRadius: "8px",
-                    color: "#ffffff",
-                    padding: "0.5rem",
-                    width: "100%",
-                  }}
-                />
-              </div>
-              <div>
-                <label htmlFor="guest-phone" style={{ display: "block", marginBottom: "0.25rem" }}>
-                  Phone Number
-                </label>
-                <input
-                  id="guest-phone"
-                  type="tel"
-                  value={guestPhone}
-                  onChange={(e) => setGuestPhone(e.target.value)}
-                  placeholder="(555) 000-0000"
-                  style={{
-                    background: "#0a0d12",
-                    border: "1px solid #263244",
-                    borderRadius: "8px",
-                    color: "#ffffff",
-                    padding: "0.5rem",
-                    width: "100%",
-                  }}
-                />
-              </div>
-              <div>
-                <label htmlFor="guest-email" style={{ display: "block", marginBottom: "0.25rem" }}>
-                  Email
-                </label>
-                <input
-                  id="guest-email"
-                  type="email"
-                  value={guestEmail}
-                  onChange={(e) => setGuestEmail(e.target.value)}
-                  placeholder="jane@example.com"
-                  style={{
-                    background: "#0a0d12",
-                    border: "1px solid #263244",
-                    borderRadius: "8px",
-                    color: "#ffffff",
-                    padding: "0.5rem",
-                    width: "100%",
-                  }}
-                />
-              </div>
-            </div>
-            <div className="actions" style={{ marginTop: "1rem" }}>
+          {isAuthenticated ? (
+            <div className="actions">
               <button
                 className="button primary"
                 type="button"
-                onClick={bookGuestAppointment}
-                disabled={!selectedSlot || isBooking}
+                onClick={bookAppointment}
+                disabled={isBooking}
               >
-                {isBooking ? "Booking..." : "Book Appointment"}
+                {isBooking ? "Booking…" : "Confirm Appointment"}
               </button>
-            </div>
-            <p className="section-copy" style={{ marginTop: "0.75rem", fontSize: "0.875rem" }}>
-              Already have an account?{" "}
-              <Link href="/auth/signin" className="button">
-                Sign in
+              <Link className="button" href="/appointments">
+                My Appointments
               </Link>
-            </p>
-          </div>
-        )}
-      </article>
-    </>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1rem" }}>
+                <div>
+                  <label htmlFor="guest-name" style={{ display: "block", marginBottom: "0.25rem" }}>
+                    Name
+                  </label>
+                  <input
+                    id="guest-name"
+                    type="text"
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    placeholder="Jane Smith"
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="guest-phone" style={{ display: "block", marginBottom: "0.25rem" }}>
+                    Phone Number
+                  </label>
+                  <input
+                    id="guest-phone"
+                    type="tel"
+                    value={guestPhone}
+                    onChange={(e) => setGuestPhone(e.target.value)}
+                    placeholder="(555) 000-0000"
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="guest-email" style={{ display: "block", marginBottom: "0.25rem" }}>
+                    Email
+                  </label>
+                  <input
+                    id="guest-email"
+                    type="email"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    placeholder="jane@example.com"
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+              <div className="actions">
+                <button
+                  className="button primary"
+                  type="button"
+                  onClick={bookGuestAppointment}
+                  disabled={isBooking}
+                >
+                  {isBooking ? "Booking…" : "Confirm Appointment"}
+                </button>
+              </div>
+              <p className="section-copy" style={{ marginTop: "0.75rem", fontSize: "0.875rem" }}>
+                Already have an account?{" "}
+                <Link href="/auth/signin" className="button">
+                  Sign in
+                </Link>
+              </p>
+            </>
+          )}
+        </article>
+      ) : null}
+
+      {/* Progress hint */}
+      {step < 3 && !booked ? (
+        <p style={{ color: "#6b7280", fontSize: "0.825rem" }}>
+          {step === 1 ? "Select a session length and date to see available times." : "Choose a time slot to continue."}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
