@@ -45,8 +45,11 @@ model Service {
 
 model Appointment {
   id               String            @id @default(cuid())
-  userId           String
-  user             User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  userId           String?
+  user             User?             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  guestName        String?
+  guestEmail       String?
+  guestPhone       String?
   serviceId        String
   service          Service           @relation(fields: [serviceId], references: [id], onDelete: Restrict)
   startAt          DateTime

@@ -8,6 +8,8 @@ type Appointment = {
   endAt: string | Date;
   status: "BOOKED" | "CANCELED";
   cancelReason: string | null;
+  guestName: string | null;
+  guestEmail: string | null;
   service: {
     id: string;
     name: string;
@@ -17,7 +19,7 @@ type Appointment = {
     id: string;
     name: string | null;
     email: string;
-  };
+  } | null;
 };
 
 type Props = {
@@ -90,7 +92,9 @@ export default function AppointmentsList({ initialAppointments, ownerView = fals
             <p>Status: {appointment.status}</p>
             {ownerView ? (
               <p>
-                Client: {appointment.user.name ?? "Unnamed"} ({appointment.user.email})
+                {appointment.user
+                  ? `Client: ${appointment.user.name ?? "Unnamed"} (${appointment.user.email})`
+                  : `Guest: ${appointment.guestName ?? "Unknown"} (${appointment.guestEmail ?? "no email"})`}
               </p>
             ) : null}
             {appointment.cancelReason ? <p>Reason: {appointment.cancelReason}</p> : null}

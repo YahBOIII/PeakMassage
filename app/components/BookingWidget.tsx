@@ -34,6 +34,13 @@ export default function BookingWidget({ isAuthenticated }: Props) {
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<"success" | "error">("error");
+
+  // Guest fields
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+
   const selectedService = useMemo(
     () => services.find((service) => service.id === serviceId) ?? null,
     [serviceId, services],
@@ -60,6 +67,7 @@ export default function BookingWidget({ isAuthenticated }: Props) {
         }
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Unable to load services.");
+        setMessageType("error");
       } finally {
         setIsLoading(false);
       }
@@ -94,6 +102,7 @@ export default function BookingWidget({ isAuthenticated }: Props) {
       } catch (error) {
         setSlots([]);
         setMessage(error instanceof Error ? error.message : "Unable to load availability.");
+        setMessageType("error");
       } finally {
         setIsCheckingAvailability(false);
       }
@@ -105,6 +114,7 @@ export default function BookingWidget({ isAuthenticated }: Props) {
   async function bookAppointment() {
     if (!selectedSlot || !serviceId) {
       setMessage("Please select a time slot.");
+      setMessageType("error");
       return;
     }
 
@@ -130,6 +140,7 @@ export default function BookingWidget({ isAuthenticated }: Props) {
       }
 
       setMessage("Appointment booked successfully.");
+      setMessageType("success");
       setSelectedSlot("");
 
       const availabilityResponse = await fetch(
@@ -143,6 +154,80 @@ export default function BookingWidget({ isAuthenticated }: Props) {
       }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to create appointment.");
+      setMessageType("error");
+    } finally {
+      setIsBooking(false);
+    }
+  }
+
+  async function bookGuestAppointment() {
+    if (!selectedSlot || !serviceId) {
+      setMessage("Please select a time slot.");
+      setMessageType("error");
+      return;
+    }
+
+    if (!guestName.trim()) {
+      setMessage("Please enter your first name.");
+      setMessageType("error");
+      return;
+    }
+
+    if (!guestEmail.trim()) {
+      setMessage("Please enter your email address.");
+      setMessageType("error");
+      return;
+    }
+
+    if (!guestPhone.trim()) {
+      setMessage("Please enter your phone number.");
+      setMessageType("error");
+      return;
+    }
+
+    setIsBooking(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/appointments/guest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          guestName: guestName.trim(),
+          guestEmail: guestEmail.trim(),
+          guestPhone: guestPhone.trim(),
+          serviceId,
+          startAt: selectedSlot,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Unable to create appointment.");
+      }
+
+      setMessage("Appointment booked! We will be in touch to confirm.");
+      setMessageType("success");
+      setSelectedSlot("");
+      setGuestName("");
+      setGuestEmail("");
+      setGuestPhone("");
+
+      const availabilityResponse = await fetch(
+        `/api/availability?date=${encodeURIComponent(date)}&serviceId=${encodeURIComponent(serviceId)}`,
+        { cache: "no-store" },
+      );
+      const availabilityData = await availabilityResponse.json();
+
+      if (availabilityResponse.ok) {
+        setSlots(availabilityData.slots as string[]);
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to create appointment.");
+      setMessageType("error");
     } finally {
       setIsBooking(false);
     }
@@ -154,7 +239,11 @@ export default function BookingWidget({ isAuthenticated }: Props) {
 
   return (
     <>
-      {message ? <p className="section-copy">{message}</p> : null}
+      {message ? (
+        <p className="section-copy" style={{ color: messageType === "success" ? "#4caf50" : undefined }}>
+          {message}
+        </p>
+      ) : null}
       {services.length > 0 ? (
         <article className="card" style={{ marginBottom: "1rem" }}>
           <h2>Select Service</h2>
@@ -226,13 +315,90 @@ export default function BookingWidget({ isAuthenticated }: Props) {
             </Link>
           </div>
         ) : (
-          <p className="section-copy" style={{ marginTop: "1rem" }}>
-            <Link href="/auth/signin" className="button primary">
-              Sign in to book
-            </Link>
-          </p>
+          <div style={{ marginTop: "1.5rem" }}>
+            <h3 style={{ marginBottom: "1rem" }}>Your Details</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", maxWidth: "400px" }}>
+              <div>
+                <label htmlFor="guest-name" style={{ display: "block", marginBottom: "0.25rem" }}>
+                  First Name
+                </label>
+                <input
+                  id="guest-name"
+                  type="text"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  placeholder="Jane"
+                  style={{
+                    background: "#0a0d12",
+                    border: "1px solid #263244",
+                    borderRadius: "8px",
+                    color: "#ffffff",
+                    padding: "0.5rem",
+                    width: "100%",
+                  }}
+                />
+              </div>
+              <div>
+                <label htmlFor="guest-phone" style={{ display: "block", marginBottom: "0.25rem" }}>
+                  Phone Number
+                </label>
+                <input
+                  id="guest-phone"
+                  type="tel"
+                  value={guestPhone}
+                  onChange={(e) => setGuestPhone(e.target.value)}
+                  placeholder="(555) 000-0000"
+                  style={{
+                    background: "#0a0d12",
+                    border: "1px solid #263244",
+                    borderRadius: "8px",
+                    color: "#ffffff",
+                    padding: "0.5rem",
+                    width: "100%",
+                  }}
+                />
+              </div>
+              <div>
+                <label htmlFor="guest-email" style={{ display: "block", marginBottom: "0.25rem" }}>
+                  Email
+                </label>
+                <input
+                  id="guest-email"
+                  type="email"
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  placeholder="jane@example.com"
+                  style={{
+                    background: "#0a0d12",
+                    border: "1px solid #263244",
+                    borderRadius: "8px",
+                    color: "#ffffff",
+                    padding: "0.5rem",
+                    width: "100%",
+                  }}
+                />
+              </div>
+            </div>
+            <div className="actions" style={{ marginTop: "1rem" }}>
+              <button
+                className="button primary"
+                type="button"
+                onClick={bookGuestAppointment}
+                disabled={!selectedSlot || isBooking}
+              >
+                {isBooking ? "Booking..." : "Book Appointment"}
+              </button>
+            </div>
+            <p className="section-copy" style={{ marginTop: "0.75rem", fontSize: "0.875rem" }}>
+              Already have an account?{" "}
+              <Link href="/auth/signin" className="button">
+                Sign in
+              </Link>
+            </p>
+          </div>
         )}
       </article>
     </>
   );
 }
+
