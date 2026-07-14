@@ -15,7 +15,8 @@ export default async function BookAppointmentPage() {
   try {
     const session = await getServerSession(authOptions);
     isAuthenticated = Boolean(session?.user?.id);
-  } catch {
+  } catch (error) {
+    console.error("Failed to load session on book appointment page.", error);
     isAuthenticated = false;
   }
 
