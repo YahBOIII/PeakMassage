@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import AuthNav from "./components/AuthNav";
 import BrandLogo from "./components/BrandLogo";
+import Providers from "./providers";
 import { brandName, sessionOptions, tagline } from "./site-content";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -49,55 +51,58 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header className="site-header">
-          <div className="container nav-wrap">
-            <Link className="brand" href="/" aria-label={brandName}>
-              <BrandLogo />
-            </Link>
-            <nav>
-              <ul className="nav-list">
-                {navLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href}>{link.label}</Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-        </header>
-        <main>{children}</main>
-        <footer className="site-footer">
-          <div className="container footer-grid">
-            <section>
-              <h3>{brandName}</h3>
-              <p>{tagline}</p>
-              <p>Individualized sessions for pain relief, mobility, and recovery.</p>
-            </section>
-            <section>
-              <h3>Session Options</h3>
-              <ul className="footer-list">
-                {sessionOptions.map((option) => (
-                  <li key={option.duration}>
-                    Recovery Massage ({option.duration}) — {option.price}
-                  </li>
-                ))}
-              </ul>
-            </section>
-            <section>
-              <h3>Explore</h3>
-              <ul className="footer-list">
-                {navLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href}>{link.label}</Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
-          <p className="copyright">
-            © {new Date().getFullYear()} {brandName}. All Rights Reserved.
-          </p>
-        </footer>
+        <Providers>
+          <header className="site-header">
+            <div className="container nav-wrap">
+              <Link className="brand" href="/" aria-label={brandName}>
+                <BrandLogo />
+              </Link>
+              <nav>
+                <ul className="nav-list">
+                  {navLinks.map((link) => (
+                    <li key={link.href}>
+                      <Link href={link.href}>{link.label}</Link>
+                    </li>
+                  ))}
+                  <AuthNav />
+                </ul>
+              </nav>
+            </div>
+          </header>
+          <main>{children}</main>
+          <footer className="site-footer">
+            <div className="container footer-grid">
+              <section>
+                <h3>{brandName}</h3>
+                <p>{tagline}</p>
+                <p>Individualized sessions for pain relief, mobility, and recovery.</p>
+              </section>
+              <section>
+                <h3>Session Options</h3>
+                <ul className="footer-list">
+                  {sessionOptions.map((option) => (
+                    <li key={option.duration}>
+                      Recovery Massage ({option.duration}) — {option.price}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+              <section>
+                <h3>Explore</h3>
+                <ul className="footer-list">
+                  {navLinks.map((link) => (
+                    <li key={link.href}>
+                      <Link href={link.href}>{link.label}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+            <p className="copyright">
+              © {new Date().getFullYear()} {brandName}. All Rights Reserved.
+            </p>
+          </footer>
+        </Providers>
       </body>
     </html>
   );

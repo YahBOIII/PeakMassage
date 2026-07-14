@@ -7,8 +7,6 @@ const isGithubActions = process.env.GITHUB_ACTIONS === "true";
 const githubPagesPath = repoName ? `/${repoName}` : undefined;
 
 const nextConfig: NextConfig = {
-  output: "export",
-  trailingSlash: true,
   images: { unoptimized: true },
   ...(isGithubActions && githubPagesPath
     ? {
