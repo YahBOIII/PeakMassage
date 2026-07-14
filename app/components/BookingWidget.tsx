@@ -34,6 +34,19 @@ function formatDateLabel(dateString: string) {
   });
 }
 
+function getBookingStep(params: {
+  date: string;
+  isCheckingAvailability: boolean;
+  slots: string[];
+  selectedSlot: string;
+}): number {
+  const { date, isCheckingAvailability, slots, selectedSlot } = params;
+  if (!date || isCheckingAvailability) return 1;
+  if (selectedSlot) return 3;
+  if (slots.length > 0) return 2;
+  return 1;
+}
+
 const inputStyle: React.CSSProperties = {
   background: "#0a0d12",
   border: "1px solid #263244",
@@ -255,8 +268,16 @@ export default function BookingWidget({ isAuthenticated }: Props) {
     );
   }
 
-  // ── Step indicator ───────────────────────────────────────────────────────────
-  const step = !date || isCheckingAvailability ? 1 : selectedSlot ? 3 : slots.length > 0 ? 2 : 1;
+  const step = getBookingStep({ date, isCheckingAvailability, slots, selectedSlot });
+
+  const stepLabelStyle: React.CSSProperties = {
+    color: "#93c5fd",
+    fontSize: "0.8rem",
+    fontWeight: 700,
+    letterSpacing: "0.08em",
+    marginBottom: "0.5rem",
+    textTransform: "uppercase",
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: 560 }}>
@@ -268,7 +289,7 @@ export default function BookingWidget({ isAuthenticated }: Props) {
 
       {/* ── Step 1: Service + Date ─────────────────────────────────────────── */}
       <article className="card">
-        <p style={{ color: "#93c5fd", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.08em", marginBottom: "0.5rem", textTransform: "uppercase" }}>
+        <p style={stepLabelStyle}>
           Step 1 — Choose a date
         </p>
         {services.length > 0 ? (
@@ -310,7 +331,7 @@ export default function BookingWidget({ isAuthenticated }: Props) {
       {/* ── Step 2: Time slot ─────────────────────────────────────────────── */}
       {date ? (
         <article className="card">
-          <p style={{ color: "#93c5fd", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.08em", marginBottom: "0.5rem", textTransform: "uppercase" }}>
+          <p style={stepLabelStyle}>
             Step 2 — Pick a time
           </p>
           {selectedService ? (
@@ -342,7 +363,7 @@ export default function BookingWidget({ isAuthenticated }: Props) {
       {/* ── Step 3: Details + Confirm ─────────────────────────────────────── */}
       {selectedSlot ? (
         <article className="card">
-          <p style={{ color: "#93c5fd", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.08em", marginBottom: "0.5rem", textTransform: "uppercase" }}>
+          <p style={stepLabelStyle}>
             Step 3 — Confirm booking
           </p>
           <p className="section-copy" style={{ marginBottom: "1rem" }}>
