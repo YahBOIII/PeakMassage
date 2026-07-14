@@ -16,7 +16,15 @@ export default async function BookAppointmentPage() {
     const session = await getServerSession(authOptions);
     isAuthenticated = Boolean(session?.user?.id);
   } catch (error) {
-    console.error("Failed to load session on book appointment page.", error);
+    const isExpectedDynamicServerError =
+      typeof error === "object" &&
+      error !== null &&
+      "digest" in error &&
+      (error as { digest?: string }).digest === "DYNAMIC_SERVER_USAGE";
+
+    if (!isExpectedDynamicServerError) {
+      console.error("Failed to load session on book appointment page.", error);
+    }
     isAuthenticated = false;
   }
 
