@@ -61,28 +61,32 @@ export async function sendGuestBookingNotification(params: {
 
   const transport = createTransport();
 
-  await transport.sendMail({
-    from: process.env.SMTP_FROM ?? process.env.SMTP_USER ?? notificationEmail,
-    to: notificationEmail,
-    subject: `New Appointment: ${guestName} – ${serviceName}`,
-    text: [
-      "A new appointment has been booked.",
-      "",
-      `Name:    ${guestName}`,
-      `Email:   ${guestEmail}`,
-      `Phone:   ${guestPhone}`,
-      `Service: ${serviceName}`,
-      `Time:    ${formattedDate}`,
-    ].join("\n"),
-    html: `
-      <p>A new appointment has been booked.</p>
-      <table cellpadding="4" style="border-collapse:collapse">
-        <tr><th align="left">Name</th><td>${escapeHtml(guestName)}</td></tr>
-        <tr><th align="left">Email</th><td>${escapeHtml(guestEmail)}</td></tr>
-        <tr><th align="left">Phone</th><td>${escapeHtml(guestPhone)}</td></tr>
-        <tr><th align="left">Service</th><td>${escapeHtml(serviceName)}</td></tr>
-        <tr><th align="left">Time</th><td>${escapeHtml(formattedDate)}</td></tr>
-      </table>
-    `,
-  });
+  try {
+    await transport.sendMail({
+      from: process.env.SMTP_FROM ?? process.env.SMTP_USER ?? notificationEmail,
+      to: notificationEmail,
+      subject: `New Appointment: ${guestName} – ${serviceName}`,
+      text: [
+        "A new appointment has been booked.",
+        "",
+        `Name:    ${guestName}`,
+        `Email:   ${guestEmail}`,
+        `Phone:   ${guestPhone}`,
+        `Service: ${serviceName}`,
+        `Time:    ${formattedDate}`,
+      ].join("\n"),
+      html: `
+        <p>A new appointment has been booked.</p>
+        <table cellpadding="4" style="border-collapse:collapse">
+          <tr><th align="left">Name</th><td>${escapeHtml(guestName)}</td></tr>
+          <tr><th align="left">Email</th><td>${escapeHtml(guestEmail)}</td></tr>
+          <tr><th align="left">Phone</th><td>${escapeHtml(guestPhone)}</td></tr>
+          <tr><th align="left">Service</th><td>${escapeHtml(serviceName)}</td></tr>
+          <tr><th align="left">Time</th><td>${escapeHtml(formattedDate)}</td></tr>
+        </table>
+      `,
+    });
+  } finally {
+    transport.close();
+  }
 }
