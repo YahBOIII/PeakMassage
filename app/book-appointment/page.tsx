@@ -9,8 +9,29 @@ export const metadata: Metadata = {
     "Book a Peak Recovery session and choose the recovery massage length that best fits your needs.",
 };
 
+const DYNAMIC_SERVER_USAGE_DIGEST = "DYNAMIC_SERVER_USAGE";
+
+function isDynamicServerError(error: unknown): error is { digest: string } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    (error as { digest?: string }).digest === DYNAMIC_SERVER_USAGE_DIGEST
+  );
+}
+
 export default async function BookAppointmentPage() {
-  const session = await getServerSession(authOptions);
+  let isAuthenticated = false;
+
+  try {
+    const session = await getServerSession(authOptions);
+    isAuthenticated = Boolean(session?.user?.id);
+  } catch (error) {
+    if (!isDynamicServerError(error)) {
+      console.error("Failed to load session on book appointment page.", error);
+    }
+    isAuthenticated = false;
+  }
 
   return (
     <section className="section">
@@ -19,7 +40,7 @@ export default async function BookAppointmentPage() {
         <p className="section-copy">
           Choose your session length, pick a date, and reserve an available time block.
         </p>
-        <BookingWidget isAuthenticated={Boolean(session?.user?.id)} />
+        <BookingWidget isAuthenticated={isAuthenticated} />
       </div>
     </section>
   );
