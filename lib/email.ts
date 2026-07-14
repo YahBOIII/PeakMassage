@@ -21,6 +21,15 @@ function getNotificationEmail(): string {
   );
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export async function sendGuestBookingNotification(params: {
   guestName: string;
   guestEmail: string;
@@ -31,6 +40,9 @@ export async function sendGuestBookingNotification(params: {
   const notificationEmail = getNotificationEmail();
 
   if (!notificationEmail || !process.env.SMTP_HOST) {
+    console.info(
+      "Guest booking notification skipped: SMTP_HOST or notification email not configured.",
+    );
     return;
   }
 
@@ -65,11 +77,11 @@ export async function sendGuestBookingNotification(params: {
     html: `
       <p>A new appointment has been booked.</p>
       <table cellpadding="4" style="border-collapse:collapse">
-        <tr><th align="left">Name</th><td>${guestName}</td></tr>
-        <tr><th align="left">Email</th><td>${guestEmail}</td></tr>
-        <tr><th align="left">Phone</th><td>${guestPhone}</td></tr>
-        <tr><th align="left">Service</th><td>${serviceName}</td></tr>
-        <tr><th align="left">Time</th><td>${formattedDate}</td></tr>
+        <tr><th align="left">Name</th><td>${escapeHtml(guestName)}</td></tr>
+        <tr><th align="left">Email</th><td>${escapeHtml(guestEmail)}</td></tr>
+        <tr><th align="left">Phone</th><td>${escapeHtml(guestPhone)}</td></tr>
+        <tr><th align="left">Service</th><td>${escapeHtml(serviceName)}</td></tr>
+        <tr><th align="left">Time</th><td>${escapeHtml(formattedDate)}</td></tr>
       </table>
     `,
   });

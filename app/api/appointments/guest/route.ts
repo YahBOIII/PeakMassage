@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { sendGuestBookingNotification } from "@/lib/email";
-import { prisma } from "@/lib/prisma";
 import { createGuestBookedAppointment } from "@/lib/scheduling";
 
 function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  // Limit length first to prevent ReDoS, then do a simple structural check
+  if (value.length > 254) return false;
+  const at = value.lastIndexOf("@");
+  if (at < 1) return false;
+  const domain = value.slice(at + 1);
+  return domain.length > 0 && domain.includes(".");
 }
 
 function isValidPhone(value: string) {
@@ -51,19 +55,15 @@ export async function POST(request: Request) {
       startAt,
     });
 
-    const service = await prisma.service.findUnique({ where: { id: serviceId } });
-
-    if (service) {
-      sendGuestBookingNotification({
-        guestName,
-        guestEmail,
-        guestPhone,
-        serviceName: service.name,
-        startAt,
-      }).catch((err: unknown) => {
-        console.error("Failed to send booking notification email.", err);
-      });
-    }
+    sendGuestBookingNotification({
+      guestName,
+      guestEmail,
+      guestPhone,
+      serviceName: appointment.service.name,
+      startAt,
+    }).catch((err: unknown) => {
+      console.error("Failed to send booking notification email.", err);
+    });
 
     return NextResponse.json({ appointment }, { status: 201 });
   } catch (error) {
