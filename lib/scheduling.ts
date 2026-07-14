@@ -127,6 +127,87 @@ export async function listAvailableSlots(params: { date: string; durationMinutes
   return slots;
 }
 
+export async function createGuestBookedAppointment(params: {
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  serviceId: string;
+  startAt: Date;
+}) {
+  const { guestName, guestEmail, guestPhone, serviceId, startAt } = params;
+
+  if (startAt <= new Date()) {
+    throw new Error("Please select a future time slot.");
+  }
+
+  return prisma.$transaction(
+    async (tx) => {
+      const service = await tx.service.findUnique({
+        where: { id: serviceId },
+      });
+
+      if (!service || !service.active) {
+        throw new Error("Selected service is not available.");
+      }
+
+      const endAt = new Date(startAt.getTime() + service.durationMinutes * 60 * 1000);
+      const dayOfWeek = startAt.getUTCDay();
+
+      const businessHours = await tx.businessHour.findMany({
+        where: {
+          dayOfWeek,
+          active: true,
+        },
+        select: {
+          startTime: true,
+          endTime: true,
+        },
+      });
+
+      if (!isWithinActiveBusinessHours(startAt, endAt, businessHours)) {
+        throw new Error("Selected slot is outside business hours.");
+      }
+
+      const conflictingAppointment = await tx.appointment.findFirst({
+        where: {
+          status: AppointmentStatus.BOOKED,
+          startAt: {
+            lt: endAt,
+          },
+          endAt: {
+            gt: startAt,
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (conflictingAppointment) {
+        throw new Error("Selected slot is no longer available.");
+      }
+
+      return tx.appointment.create({
+        data: {
+          guestName,
+          guestEmail,
+          guestPhone,
+          serviceId,
+          startAt,
+          endAt,
+          status: AppointmentStatus.BOOKED,
+        },
+        include: {
+          service: true,
+        },
+      });
+    },
+    {
+      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+    },
+  );
+}
+
 export async function createBookedAppointment(params: {
   userId: string;
   serviceId: string;
