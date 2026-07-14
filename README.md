@@ -55,11 +55,9 @@ Seed behavior:
 - Creates default weekday business hours (Mon-Fri, 09:00-17:00 UTC).
 - Creates/updates the owner account when `OWNER_EMAIL` and `OWNER_PASSWORD` are set.
 
-## Rough draft link (no Vercel required)
+## Deployment
 
-GitHub Pages deployment target:
-
-https://yahboiii.github.io/PeakMassage/
+This app is deployed on [Vercel](https://vercel.com). Push to `main` to trigger a production deploy.
 
 ## Validation
 
