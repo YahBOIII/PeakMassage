@@ -10,7 +10,14 @@ export const metadata: Metadata = {
 };
 
 export default async function BookAppointmentPage() {
-  const session = await getServerSession(authOptions);
+  let isAuthenticated = false;
+
+  try {
+    const session = await getServerSession(authOptions);
+    isAuthenticated = Boolean(session?.user?.id);
+  } catch {
+    isAuthenticated = false;
+  }
 
   return (
     <section className="section">
@@ -19,7 +26,7 @@ export default async function BookAppointmentPage() {
         <p className="section-copy">
           Choose your session length, pick a date, and reserve an available time block.
         </p>
-        <BookingWidget isAuthenticated={Boolean(session?.user?.id)} />
+        <BookingWidget isAuthenticated={isAuthenticated} />
       </div>
     </section>
   );
